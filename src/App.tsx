@@ -19,6 +19,11 @@ import {
   loadHistory,
 } from './services/storage';
 import {
+  loadSubscription,
+  saveSubscription,
+  UserSubscription,
+} from './services/payment';
+import {
   generateSchedule,
   evaluateItemStates,
   canCompleteItem,
@@ -36,6 +41,7 @@ import { getISTTodayString } from './utils/time';
 export default function App() {
   // 1. Settings & State Initialization
   const [settings, setSettings] = useState<UserSettings>(() => loadSettings());
+  const [subscription, setSubscription] = useState<UserSubscription>(() => loadSubscription());
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [scheduleItems, setScheduleItems] = useState<HydrationItem[]>([]);
   const [historyRecords, setHistoryRecords] = useState<DailyHistoryRecord[]>(() => loadHistory());
@@ -224,6 +230,22 @@ export default function App() {
     }
   };
 
+  const handlePaymentSuccess = (planId: 'pro' | 'annual', paymentId: string) => {
+    const updatedSub: UserSubscription = {
+      plan: planId,
+      paymentId,
+      verifiedAt: new Date().toISOString(),
+    };
+    setSubscription(updatedSub);
+    saveSubscription(updatedSub);
+
+    setWarningToast({
+      open: true,
+      title: '🎉 Subscription Activated!',
+      message: `Your ${planId === 'annual' ? 'Annual' : 'Pro'} plan has been successfully verified and activated.`,
+    });
+  };
+
   return (
     <div className="min-w-[320px] min-h-screen bg-gradient-to-br from-[#1e40af] via-[#3b82f6] to-[#0d9488] dark:from-[#090d16] dark:via-[#0f172a] dark:to-[#042f2e] text-slate-50 transition-colors flex flex-col font-sans relative overflow-x-hidden selection:bg-teal-300 selection:text-teal-950">
       {/* Background Frosted Ambient Glow Spheres */}
@@ -293,7 +315,13 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'upgrade' && <UpgradeView language={settings.language} />}
+        {activeTab === 'upgrade' && (
+          <UpgradeView
+            language={settings.language}
+            subscription={subscription}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
+        )}
       </main>
 
       {/* Active Reminder In-App Popup Modal */}
