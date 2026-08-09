@@ -1,0 +1,6 @@
+{
+  "name": "Hydration Reminder & Scheduler",
+  "description": "Personalized daily hydration scheduling and reminders in India Standard Time (IST).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
